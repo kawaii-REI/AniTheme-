@@ -14,38 +14,38 @@ jobs:
 
       - uses: android-actions/setup-android@v3
 
-      - name: Accept licenses
-        run: yes | sdkmanager --licenses || true
-
-      - name: Install SDK
-        run: sdkmanager "platforms;android-35" "build-tools;34.0.0"
+      - name: Accept licenses & install SDK
+        run: |
+          yes | sdkmanager --licenses || true
+          sdkmanager "platforms;android-34" "build-tools;34.0.0" "platform-tools"
 
       - name: Generate placeholder icons
         run: |
           for dpi in mdpi hdpi xhdpi xxhdpi xxxhdpi; do
             mkdir -p app/src/main/res/mipmap-$dpi
-            convert -size 192x192 xc:#E8553E \
-              -fill white -font DejaVu-Sans-Bold -pointsize 80 \
-              -gravity center -annotate 0 "五" \
-              app/src/main/res/mipmap-$dpi/ic_launcher.png 2>/dev/null || \
             python3 -c "
-          import struct, zlib
-          def png(w,h,color):
-              def chunk(t,d):
-                  c=struct.pack('>I',len(d))+t+d
-                  return c+struct.pack('>I',zlib.crc32(c[4:])&0xffffffff)
-              raw=b''.join(b'\x00'+bytes(color)*w for _ in range(h))
-              return b'\x89PNG\r\n\x1a\n'+chunk(b'IHDR',struct.pack('>IIBBBBB',w,h,8,2,0,0,0))+chunk(b'IDAT',zlib.compress(raw))+chunk(b'IEND',b'')
-          open('app/src/main/res/mipmap-$dpi/ic_launcher.png','wb').write(png(192,192,[232,85,62]))
-          "
-            cp app/src/main/res/mipmap-$dpi/ic_launcher.png \
-               app/src/main/res/mipmap-$dpi/ic_launcher_round.png
+import struct, zlib
+def mk_png(w, h, r, g, b):
+    raw = b''.join(b'\x00' + bytes([r,g,b]*w) for _ in range(h))
+    def chunk(tag, data):
+        c = struct.pack('>I', len(data)) + tag + data
+        return c + struct.pack('>I', zlib.crc32(c[4:]) & 0xffffffff)
+    return (b'\x89PNG\r\n\x1a\n'
+        + chunk(b'IHDR', struct.pack('>IIBBBBB', w, h, 8, 2, 0, 0, 0))
+        + chunk(b'IDAT', zlib.compress(raw))
+        + chunk(b'IEND', b''))
+data = mk_png(192, 192, 232, 85, 62)
+open('app/src/main/res/mipmap-$dpi/ic_launcher.png','wb').write(data)
+open('app/src/main/res/mipmap-$dpi/ic_launcher_round.png','wb').write(data)
+"
           done
 
-      - name: Generate wrapper
-        run: gradle wrapper --gradle-version 8.7 && chmod +x gradlew
+      - name: Generate Gradle wrapper
+        run: |
+          gradle wrapper --gradle-version 8.7
+          chmod +x gradlew
 
-      - name: Build APK
+      - name: Build Debug APK
         run: ./gradlew assembleDebug --stacktrace
 
       - name: Upload APK
