@@ -8,24 +8,22 @@ plugins {
 
 android {
     namespace = "com.anitheme"
-    compileSdk = 35
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "com.anitheme.quintuplet"
-        minSdk = 21          // Android 5.0 — supports very old phones
-        targetSdk = 35
+        minSdk = 21
+        targetSdk = 34
         versionCode = 1
         versionName = "1.0.0"
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = true
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            isMinifyEnabled = false
         }
         debug {
             isDebuggable = true
-            applicationIdSuffix = ".debug"
         }
     }
 
@@ -40,16 +38,6 @@ android {
 
     buildFeatures {
         compose = true
-    }
-
-    // Split APKs by ABI for smaller download size on older phones
-    splits {
-        abi {
-            isEnable = true
-            reset()
-            include("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
-            isUniversalApk = true
-        }
     }
 }
 
