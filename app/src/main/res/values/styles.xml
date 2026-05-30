@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.AniTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+    <style name="Theme.AniTheme" parent="android:Theme.Material.NoTitleBar">
         <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:windowBackground">@android:color/black</item>
     </style>
 </resources>
